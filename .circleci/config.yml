@@ -31,7 +31,9 @@ commands:
             #  Add revert code here. You can find this in the Getting Started section.
               exit 1
             fi
-            
+orbs:
+  slack: circleci/slack@4.1
+         
 jobs:
   build-frontend:
     docker:
@@ -130,7 +132,24 @@ jobs:
             npm audit fix --force
 
 
-
+  deploy:
+    docker:
+      - image: 'cimg/base:stable'
+    steps:
+      - run: echo "deploy my app"
+      - slack/notify:
+          event: fail
+          mentions: '@EngineeringTeam'
+          template: basic_fail_1
+      - slack/notify:
+          event: pass
+          template: success_tagged_deploy_1
+  test:
+    docker:
+      - image: 'cimg/base:stable'
+    steps:
+      - run: echo "test my app"
+ 
 
 workflows:
   default:
@@ -145,4 +164,27 @@ workflows:
           requires: [build-backend]
       - scan-frontend:
           requires: [build-frontend]
-
+  test-and-deploy:
+    jobs:
+      - test
+      - slack/on-hold:
+          context: slack-secrets
+          filters:
+            tags:
+              only: /^v.*/
+          requires:
+            - test
+      - pause_workflow:
+          filters:
+            tags:
+              only: /^v.*/
+          requires:
+            - test
+            - slack/on-hold
+          type: approval
+      - deploy:
+          filters:
+            tags:
+              only: /^v.*/
+          requires:
+            - pause_workflow  
