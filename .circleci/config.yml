@@ -224,7 +224,6 @@ jobs:
       - run:
           name: Send migration results to memstash
           command: |
-            echo ${MIGRATIONS_OUTPUT}
             if grep -q "has been executed successfully" ~/project/backend/migrations_dump.txt; 
             then
               curl -H "Content-Type: text/plain" -H "token: 30b5775c-1059-4133-ba75-3381e3a22d5b" --request PUT --data "1" https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID:0:7}
@@ -248,7 +247,6 @@ jobs:
           name: Get backend url
           command: |
             BACKEND_IP=$(curl -H "Content-Type: text/plain" -H "token: 96f11936-5119-4b04-ac7f-b73f59eb5ef8" --request GET  https://api.memstash.io/values/UdaPeople-${CIRCLE_WORKFLOW_ID:0:7}-BackendIP)
-            export BACKEND_IP=$(aws ec2 describe-instances...............)
             export API_URL="http://${BACKEND_IP}:3030"
             echo "API_URL = ${API_URL}"
             echo API_URL="http://${BACKEND_IP}:3030" >> frontend/.env
@@ -284,7 +282,7 @@ workflows:
   #        requires: [deploy-infrastructure]
       - run-migrations
   #        requires: [configure-infrastructure]
-      - deploy-frontend:
-          requires: [run-migrations]
+  #    - deploy-frontend:
+   #       requires: [run-migrations]
 
 
