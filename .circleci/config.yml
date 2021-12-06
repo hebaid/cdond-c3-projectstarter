@@ -221,6 +221,8 @@ jobs:
               npm install
               npm i --save-dev braces
               npm audit fix --audit-level=critical --force
+              npm audit fix --audit-level=moderate --force
+              npm audit fix --audit-level=high --force
               npm audit fix --force
               npm i --save-dev braces
               npm run migrations > migrations_dump.txt
