@@ -202,37 +202,38 @@ jobs:
             ansible-playbook -i /tmp/.circleci/ansible/inventory.txt .circleci/ansible/configure-server.yml
       # Here's where you will add some code to rollback on failure
       - destroy-environment
-
   run-migrations:
     docker:
       - image: circleci/node:13.8.0
-        user: root      
+        user: root
     steps:
       - checkout
       - run:
           name: Install dependencies
           command: |
             apt-get update
-            apt -y install awscli      
+            apt -y install awscli
       - run:
           name: Run migrations
           command: |
-              cd backend
-              npm install
-              npm audit fix --audit-level=critical --force
-              npm audit fix --force
-              # Run and sve the migration output
-              npm run migrations > migrations_dump.txt
+            cd backend
+            npm install
+            MIGRATIONS_OUTPUT=$(npm run migrations)
       - run:
           name: Send migration results to memstash
           command: |
-            if grep -q "has been executed successfully" ~/project/backend/migrations_dump.txt; 
-            then
-              curl -H "Content-Type: text/plain" -H "token: 30b5775c-1059-4133-ba75-3381e3a22d5b" --request PUT --data "1" https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID:0:7}
+            echo ${MIGRATIONS_OUTPUT}
+            if grep -q "has been executed successfully" ${MIGRATIONS_OUTPUT}; then
+              curl -H "Content-Type: text/plain" -H "token: 30b5775c-1059-4133-ba75-3381e3a22d5b" --request PUT --data "success" https://api.memstash.io/values/UdaPeople-${CIRCLE_WORKFLOW_ID:0:7}-DBMigrationStatus
+            else
+              curl -H "Content-Type: text/plain" -H "token: 30b5775c-1059-4133-ba75-3381e3a22d5b" --request PUT --data "failure" https://api.memstash.io/values/UdaPeople-${CIRCLE_WORKFLOW_ID:0:7}-DBMigrationStatus
             fi
-       # Here's where you will add some code to rollback on failure     
       - destroy-environment
 
+
+
+
+ 
 
   deploy-frontend:
     docker:
