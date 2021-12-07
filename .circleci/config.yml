@@ -271,7 +271,7 @@ jobs:
       - add_ssh_keys:
           fingerprints: ["ca:88:76:6c:83:b0:7b:61:cc:14:4f:d4:be:5e:f7:46"]
       - attach_workspace:
-          at: ~/
+          at: . 
 
       - run:
           name: Install dependencies "Install dependencies for the next step, such as tar, gzip, ansible, or awscli."
