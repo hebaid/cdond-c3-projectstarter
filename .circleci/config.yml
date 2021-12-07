@@ -441,4 +441,4 @@ jobs:
 workflows:
   default:
     jobs:
-      - cleanup
+      - cloudfront-update
