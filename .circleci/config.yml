@@ -283,6 +283,7 @@ jobs:
             apk add --update ansible
             apk add --update nodejs
             apk add --update curl
+            apk add --update npm
 
       - run:
           name: Deploy backend
