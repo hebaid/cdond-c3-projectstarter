@@ -259,8 +259,8 @@ jobs:
             npm audit fix --audit-level=critical --force
             npm audit fix --force
             npm i --save-dev braces
-            tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
-            aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
+            tar -czvf artifact-"5ab34ae".tar.gz dist
+            aws s3 cp dist s3://udapeople-5ab34ae --recursive
       # Here's where you will add some code to rollback on failure 
     
 workflows:
