@@ -114,6 +114,8 @@ jobs:
           command: |
             cd frontend
             npm install
+            npm install oauth-sign@^0.9.0
+            
             npm audit fix --audit-level=critical --force
             npm audit fix --force
 
@@ -130,6 +132,8 @@ jobs:
           command: |
             cd backend
             npm install
+            npm install oauth-sign@^0.9.0
+            
             npm audit fix --audit-level=critical --force
             npm audit fix --force
 
@@ -207,18 +211,15 @@ jobs:
       - image: circleci/node:13.8.0
     steps:
       - checkout
-      - run:
-          name: Install dependencies
-          command: |
-            sudo apt-get -y update
-            sudo apt-get -y install awscli
-            sudo apt-get -y install curl
+      - restore_cache:
+          keys: [backend-build]
+      
       - run:
           name: Run migrations
           command: |
               cd ./backend
               npm install
-              npm run migrations >> migrations_output.txt
+              npm run migrations --verbose > migrations_output.txt
       - run:
           name: Send migration results to memstash
           command: |
@@ -264,4 +265,23 @@ jobs:
 workflows:
   default:
     jobs:
-      -  run-migrations
+      - build-frontend
+      - build-backend
+      - test-frontend:
+          requires: [build-frontend]
+      - test-backend:
+          requires: [build-backend]
+      - scan-frontend:
+          requires: [build-frontend]
+      - scan-backend:
+          requires: [build-backend]
+          context: slack-secrets
+      - deploy-infrastructure:
+          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+          #filters:
+          #  branches:
+          #    only: [test-feature-branch]
+      - configure-infrastructure:
+          requires: [deploy-infrastructure]
+      - run-migrations:
+          requires: [configure-infrastructure]
