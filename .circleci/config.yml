@@ -383,10 +383,10 @@ jobs:
           name: Update cloudfront distribution
           command: |
             # your code here
-              export oldworkstack=$(aws cloudformation \
+            export oldworkstack=$(aws cloudformation \
               list-exports --query "Exports[?Name==\`WorkflowID\`].Value" \
               --no-paginate --output text)
-            echo $oldworkstack > ~/oldworkstack.txt
+            echo $oldworkstack
 
             aws cloudformation deploy \
                     --template-file .circleci/files/cloudfront.yml \
