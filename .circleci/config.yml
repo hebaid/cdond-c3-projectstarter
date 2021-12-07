@@ -244,7 +244,7 @@ jobs:
           command: |
             export BACKEND_IP=$(aws ec2 describe-instances \
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
-              --filters "Name=tag:Name,Values=backend-5ab34ae" \
+              --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --output text)
             export API_URL="http://${BACKEND_IP}:3030"
             echo "API_URL = ${API_URL}"
@@ -259,11 +259,49 @@ jobs:
             npm audit fix --audit-level=critical --force
             npm audit fix --force
             npm i --save-dev braces
-            tar -czvf artifact-"5ab34ae".tar.gz dist
-            aws s3 cp dist s3://udapeople-5ab34ae --recursive
+            tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
+            aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
       # Here's where you will add some code to rollback on failure 
-    
+
+  deploy-backend:
+    docker:
+      - image: python:3.7-alpine3.11
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints: ["ca:88:76:6c:83:b0:7b:61:cc:14:4f:d4:be:5e:f7:46"]
+      - attach_workspace:
+          at: ~/
+
+      - run:
+          name: Install dependencies "Install dependencies for the next step, such as tar, gzip, ansible, or awscli."
+          command: |
+            apk update
+            pip install awscli
+            apk add --upgrade gzip
+            apk add --upgrade tar
+            apk add --update ansible
+            apk add --update nodejs
+            apk add --update curl
+
+      - run:
+          name: Deploy backend
+          command: |
+            # your code here
+            cd backend
+            npm i
+            npm run build
+            cd ..
+            # Zip the directory
+            tar -C backend -czvf artifact.tar.gz .
+            cd .circleci/ansible
+            echo "Contents  of the inventory.txt file is -------"
+            cat inventory.txt
+            ansible-playbook -i inventory.txt deploy-backend.yml
+      # Here's where you will add some code to rollback on failure  
+
+
 workflows:
   default:
     jobs:
-      -   deploy-frontend
+      - deploy-backend
