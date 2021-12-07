@@ -15,7 +15,7 @@ commands:
           name: Destroy backend
           when: on_fail
           command: |
-            aws cloudformation delete-stack --stack-name udapeople-backend-prod-${CIRCLE_WORKFLOW_ID:0:7}
+            aws cloudformation delete-stack --stack-name udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}
 
   revert-migrations:
     description: Revert the last migration if successfully run in the current workflow.
@@ -43,12 +43,6 @@ jobs:
       - image: circleci/node:13.8.0
     steps:
       - checkout
-      - run:
-          name: Install dependencies
-          command: |
-            sudo apt-get -y update
-            sudo apt-get -y install awscli
-            sudo apt-get -y install curl
       - restore_cache:
           keys: [frontend-build]
       - run:
@@ -66,20 +60,14 @@ jobs:
       - image: circleci/node:13.8.0
     steps:
       - checkout
-      - run:
-          name: Install dependencies
-          command: |
-            sudo apt-get -y update
-            sudo apt-get -y install awscli
-            sudo apt-get -y install curl      
       - restore_cache:
           keys: [backend-build]
       - run:
           name: Back-end build
           command: |
             # Your code here
-            cd ./backend
-            npm install --package-lock
+            cd backend
+            npm install
             npm run build
       - save_cache:
           paths: [backend/node_modules]
@@ -90,18 +78,13 @@ jobs:
       - image: circleci/node:13.8.0
     steps:
       - checkout
-      - run:
-          name: Install dependencies
-          command: |
-            sudo apt-get -y update
-            sudo apt-get -y install awscli
-            sudo apt-get -y install curl        
       - restore_cache:
           keys: [frontend-test]
       - run:
           name: Run Frontend test
           command: |
-            cd ./frontend
+            cd frontend
+            npm install
             npm run test
                 
   test-backend:
@@ -109,19 +92,13 @@ jobs:
       - image: circleci/node:13.8.0
     steps:
       - checkout
-      - run:
-          name: Install dependencies
-          command: |
-            sudo apt-get -y update
-            sudo apt-get -y install awscli
-            sudo apt-get -y install curl        
-      
       - restore_cache:
           keys: [backend-test]
       - run:
           name: Run backend test
           command: |
-            cd ./backend
+            cd backend
+            npm install
             npm run test
 
             
@@ -130,67 +107,15 @@ jobs:
       - image: circleci/node:13.8.0
     steps:
       - checkout
-      - run:
-          name: Install dependencies
-          command: |
-            sudo apt-get -y update
-            sudo apt-get -y install awscli
-            sudo apt-get -y install curl        
-            
       - restore_cache:
           keys: [frontend-scan]
       - run:
           name: Run frontend scan
           command: |
-            cd ./frontend
+            cd frontend
             npm install
-            npm audit fix --audit-level=critical
-      - slack/notify:
-          channel: C02PXT19Q8Z
-          event: fail
-          custom: |
-               {
-                    "blocks": [
-                      {
-                        "type": "section",
-                        "text": {
-                          "type": "mrkdwn",
-                          "text": "CircleCI pipeline status notification for project: $CIRCLE_PROJECT_REPONAME and branch: $CIRCLE_BRANCH"
-                        },
-                        "block_id": "header"
-                      },
-                      {
-                        "type": "section",
-                        "block_id": "body",
-                        "fields": [
-                          {
-                            "type": "mrkdwn",
-                            "text": "*Build status*"
-                          },
-                          {
-                            "type": "plain_text",
-                            "text": "$CCI_STATUS"
-                          },
-                          {
-                            "type": "mrkdwn",
-                            "text": "*Build date*"
-                          },
-                          {
-                            "type": "plain_text",
-                            "text": "$(date +'%m/%d/%Y %T')"
-                          },
-                          {
-                            "type": "mrkdwn",
-                            "text": "*Build URL*"
-                          },
-                          {
-                            "type": "plain_text",
-                            "text": "$CIRCLE_BUILD_URL"
-                          }
-                        ]
-                      }
-                    ]
-                  }
+            npm audit fix --audit-level=critical --force
+            npm audit fix --force
 
 
   scan-backend:
@@ -339,17 +264,4 @@ jobs:
 workflows:
   default:
     jobs:
-      - build-frontend:
-          context: 
-            - circleci-udapeople-slack
-
-      - test-frontend:
-          context: 
-            - circleci-udapeople-slack
-          requires: [build-frontend]
-
-      - scan-frontend:
-          context:
-            - circleci-udapeople-slack
-          requires: [build-frontend]
-
+      -  run-migrations
