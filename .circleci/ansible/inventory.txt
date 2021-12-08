@@ -1,2 +1,0 @@
-[web]
-ec2-3-88-215-1.compute-1.amazonaws.com
