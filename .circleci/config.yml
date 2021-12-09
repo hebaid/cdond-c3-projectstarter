@@ -1,6 +1,6 @@
 version: 2.1
 orbs: 
-  slack: circleci/slack@4.5.1
+  slack: circleci/slack@4.1
 
 commands:
   destroy-environment:
@@ -68,9 +68,9 @@ jobs:
             cd frontend
             npm install --package-lock
       - slack/notify:
-          channel: ABCXYZ
-          event: fail
-          template: build-frontend
+          channel:
+          event: 
+          template: 
       - save_cache:
           paths: [frontend/node_modules]
           key: frontend-build
@@ -93,9 +93,9 @@ jobs:
           paths: [backend/node_modules]
           key: backend-build
       - slack/notify:
-          channel: ABCXYZ
-          event: fail
-          template: build-frontend
+          channel: 
+          event: 
+          template:
 
   test-frontend:
     docker:
