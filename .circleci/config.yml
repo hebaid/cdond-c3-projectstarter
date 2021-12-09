@@ -273,7 +273,7 @@ jobs:
       - add_ssh_keys:
           fingerprints: ["ca:88:76:6c:83:b0:7b:61:cc:14:4f:d4:be:5e:f7:46"]
       - attach_workspace:
-          at: . 
+          at:  /tmp/.circleci/ansible
 
       - run:
           name: Install dependencies "Install dependencies for the next step, such as tar, gzip, ansible, or awscli."
@@ -376,18 +376,17 @@ jobs:
           command: |
             # your code here
             yum -y install tar gzip
-
+      - attach_workspace:
+          at:  /tmp/.circleci/ansible
 
       - run:
           name: Update cloudfront distribution
           command: |
             # your code here
-            import WorkflowID
             export oldworkstack=$(aws cloudformation \
               list-exports --query "Exports[?Name==\`WorkflowID\`].Value" \
               --no-paginate --output text)
             echo $oldworkstack >> ~/oldworkstack.txt
-
             aws cloudformation deploy \
                     --template-file .circleci/files/cloudfront.yml \
                     --stack-name prod-${oldworkstack}-${CIRCLE_WORKFLOW_ID:0:7} \
