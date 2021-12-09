@@ -1,6 +1,6 @@
 version: 2.1
-orbs:
-  slack: circleci/slack@4.4.4
+orbs: 
+  slack: circleci/slack@4.5.1
 
 commands:
   destroy-environment:
@@ -31,6 +31,29 @@ commands:
 
          
 jobs:
+
+  notify:
+    docker:
+      - image: 'cimg/base:stable'
+    steps:
+      - slack/notify:
+          custom: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "plain_text",
+                      "text": "*This is a text notification*",
+                      "emoji": true
+                    }
+                  ]
+                }
+              ]
+            }
+          event: always
+  
   build-frontend:
     docker:
       - image: circleci/node:13.8.0
@@ -44,6 +67,10 @@ jobs:
             # Your code here
             cd frontend
             npm install --package-lock
+      - slack/notify:
+          channel: ABCXYZ
+          event: fail
+          template: build-frontend
       - save_cache:
           paths: [frontend/node_modules]
           key: frontend-build
