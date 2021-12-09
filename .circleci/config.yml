@@ -10,10 +10,13 @@ commands:
           name: Destroy environments
           when: on_fail
           command: |
-                aws s3 rm s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
-                aws s3 rb s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --force
-                aws cloudformation delete-stack --stack-name udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}
-                aws cloudformation delete-stack --stack-name udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}
+              curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+              unzip awscliv2.zip
+              sudo ./aws/install          
+              aws s3 rm s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
+              aws s3 rb s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --force
+              aws cloudformation delete-stack --stack-name udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}
+              aws cloudformation delete-stack --stack-name udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}
   revert-migrations:
     description: Revert the last migration if successfully run in the current workflow.
     steps:
@@ -464,60 +467,34 @@ jobs:
 workflows:
   default:
     jobs:
-      - build-frontend:
-          context:
-            - $SLACK_ACCESS_TOKEN
-            - $SLACK_DEFAULT_CHANNEL	
+      - build-frontend
       - test-frontend:
-          context:
-            - slack-secrets         
           requires: [build-frontend]
       - scan-frontend:
-          context:
-            - $SLACK_ACCESS_TOKEN
-            - $SLACK_DEFAULT_CHANNEL	
           requires: [build-frontend] 
 
-      - build-backend:
-          context:
-            - Slack-notifications         
+      - build-backend
       - test-backend:
-          context:
-            - Slack-notifications         
           requires: [build-backend]
       - scan-backend:
-          context:
-            - Slack-notifications         
           requires: [build-backend]
         
       - deploy-infrastructure:
-          context:
-            - Slack-notifications        
           requires: [test-frontend, scan-frontend, test-backend, scan-backend]
           filters:
              branches:
                only: [master]
 
       - configure-infrastructure:
-          context:
-            - Slack-notifications         
           requires: [deploy-infrastructure]
 
       - deploy-frontend:
-          context:
-            - Slack-notifications         
           requires: [deploy-infrastructure]
       - deploy-backend:
-          context:
-            - Slack-notifications         
           requires: [deploy-frontend]
 
       - smoke-test:
-          context:
-            - Slack-notifications         
           requires: [deploy-backend, deploy-frontend]
 
       - cloudfront-update:
-          context:
-            - Slack-notifications         
           requires: [smoke-test]
