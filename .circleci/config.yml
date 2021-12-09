@@ -435,37 +435,30 @@ workflows:
     jobs:
       - build-frontend:
           context:
-            - AWSPolicy
             - Slack-notifications 
       - test-frontend:
           context:
-            - AWSPolicy
             - Slack-notifications         
           requires: [build-frontend]
       - scan-frontend:
           context:
-            - AWSPolicy
             - Slack-notifications         
           requires: [build-frontend] 
 
       - build-backend:
           context:
-            - AWSPolicy
             - Slack-notifications         
       - test-backend:
           context:
-            - AWSPolicy
             - Slack-notifications         
           requires: [build-backend]
       - scan-backend:
           context:
-            - AWSPolicy
             - Slack-notifications         
           requires: [build-backend]
         
       - deploy-infrastructure:
           context:
-            - AWSPolicy
             - Slack-notifications        
           requires: [test-frontend, scan-frontend, test-backend, scan-backend]
           filters:
@@ -474,29 +467,24 @@ workflows:
 
       - configure-infrastructure:
           context:
-            - AWSPolicy
             - Slack-notifications         
           requires: [deploy-infrastructure]
 
       - deploy-frontend:
           context:
-            - AWSPolicy
             - Slack-notifications         
           requires: [deploy-infrastructure]
       - deploy-backend:
           context:
-            - AWSPolicy
             - Slack-notifications         
           requires: [deploy-frontend]
 
       - smoke-test:
           context:
-            - AWSPolicy
             - Slack-notifications         
           requires: [deploy-backend, deploy-frontend]
 
       - cloudfront-update:
           context:
-            - AWSPolicy
             - Slack-notifications         
           requires: [smoke-test]
